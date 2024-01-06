@@ -32,8 +32,12 @@ export const routes: RouteRecordRaw[] = [
         path: '',
         name: 'home',
         component: () => import('@/views/HomeComponent.vue')
+      },
+      {
+        path: '/chat',
+        name: 'chat',
+        component: () => import('@/views/ChatPage.vue')
       }
-
     ],
     meta: {
       middlewares: {
