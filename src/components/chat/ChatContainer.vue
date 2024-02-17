@@ -50,7 +50,7 @@
 
     <q-page-container>
       <q-page padding>
-        <template v-for="group in groupedMessages" :key="group.type">
+        <template v-for="(group, index) in groupedMessages" :key="index">
           <div :class="group.type">
             <MessageArea v-for="(message, index) in group.messages" :key="message.id" :first-message="index === 0"
                          :message="message"></MessageArea>
@@ -75,17 +75,22 @@
 </template>
 
 <script lang="ts" setup>
-import type { IContact } from '@/interfaces/IContacts'
+import type { IContact } from '@/interfaces/IContact'
 import type { IMessage } from '@/interfaces/IMessage'
 import MessageArea from '@/components/chat/MessageContainer.vue'
 import ContactList from '@/components/chat/ContactList.vue'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useQuasar } from 'quasar'
-import { setErrorImg } from '@/services/chat.service'
+import { setErrorImg } from '@/services/chat/chat.service'
 
 const props = defineProps<{
   contacts: IContact[];
   messages: IMessage[];
+}>()
+
+const emit = defineEmits<{
+  (e: 'changeCurrentContact', id: string): void;
+  (e: 'onSearch', value?: string): void;
 }>()
 
 const { dark } = useQuasar()
@@ -93,12 +98,29 @@ const { dark } = useQuasar()
 const message = ref('')
 const currentConversationId = ref('')
 
+const leftDrawerOpen = ref(true)
+const rightDrawerOpen = ref(false)
+
 const currentConversation = computed(() => {
   return props.contacts.find(contact => contact.id === currentConversationId.value) || props.contacts[0]
 })
 
-const leftDrawerOpen = ref(true)
-const rightDrawerOpen = ref(false)
+const groupedMessages = computed(() => {
+  return props.messages.reduce<{ type: string, messages: IMessage[] }[]>((acc, message) => {
+    const lastMessage = acc[acc.length - 1]
+    if (lastMessage && lastMessage.type === message.type) {
+      lastMessage.messages.push(message)
+    } else {
+      acc.push({ type: message.type, messages: [message] })
+    }
+
+    return acc
+  }, [])
+})
+
+watch(currentConversationId, () => {
+  emit('changeCurrentContact', currentConversationId.value)
+})
 
 const toggleLeftDrawer = () => {
   leftDrawerOpen.value = !leftDrawerOpen.value
@@ -108,20 +130,10 @@ const toggleRightDrawer = () => {
   rightDrawerOpen.value = !rightDrawerOpen.value
 }
 
-const search = (value: string) => {
-  console.log(value)
+const search = (value?: string) => {
+  emit('onSearch', value?.trim())
 }
 
-const groupedMessages = props.messages.reduce<{ type: string, messages: IMessage[] }[]>((acc, message) => {
-  const lastMessage = acc[acc.length - 1]
-  if (lastMessage && lastMessage.type === message.type) {
-    lastMessage.messages.push(message)
-  } else {
-    acc.push({ type: message.type, messages: [message] })
-  }
-
-  return acc
-}, [])
 </script>
 
 <style scoped>

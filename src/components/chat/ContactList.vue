@@ -35,8 +35,8 @@
   </q-toolbar>
 
   <q-toolbar>
-    <q-input v-model="contactSearch" class="full-width" dense disable outlined
-             placeholder="Pesquisar ou começar uma nova conversa"
+    <q-input v-model="contactSearch" class="full-width" clearable debounce="500" dense
+             outlined placeholder="Pesquisar ou começar uma nova conversa"
              rounded @update:model-value="$emit('onSearch', contactSearch)">
       <template v-slot:prepend>
         <q-icon name="search" />
@@ -44,43 +44,44 @@
     </q-input>
   </q-toolbar>
 
-  <q-scroll-area style="height: calc(100% - 100px)">
-    <q-list>
-      <template v-for="contact in contacts" :key="contact.id">
-        <q-item v-ripple clickable @click="$emit('onChangeCurrentChat', contact.id)">
-          <q-item-section avatar>
-            <q-avatar>
-              <img :src="contact.avatar" alt="Foto de perfil" @error="setErrorImg">
-            </q-avatar>
-          </q-item-section>
+  <q-scroll-area style="height: calc(100% - 100px); max-width: 300px">
+    <q-list separator style="max-width: 300px">
+      <q-item v-for="contact in contacts" :key="contact.id" v-ripple clickable
+              @click="$emit('onChangeCurrentChat', contact.id)">
+        <q-item-section avatar>
+          <q-avatar>
+            <img :src="contact.avatar" alt="Foto de perfil" @error="setErrorImg">
+          </q-avatar>
+        </q-item-section>
 
-          <q-item-section>
-            <q-item-label lines="1">
-              {{ contact.name }}
-            </q-item-label>
-            <q-item-label caption>
-              <q-icon v-if="contact.lastMessage?.status" name="check" />
-              {{ contact.lastMessage.text }}
-            </q-item-label>
-          </q-item-section>
+        <q-item-section>
+          <q-item-label lines="1">
+            {{ contact.name }}
+          </q-item-label>
+          <q-item-label caption lines="1">
+            <q-icon v-if="contact.lastMessage?.status" name="check" />
+            {{ contact.lastMessage.text }}
+          </q-item-label>
+        </q-item-section>
 
-          <q-item-section side>
-            <q-item-label caption>
-              {{ contact.lastMessage.timestamp }}
-            </q-item-label>
-            <q-icon name="keyboard_arrow_down" />
-          </q-item-section>
-        </q-item>
-        <q-separator inset />
-      </template>
+        <q-item-section side>
+          <q-item-label caption>
+            {{
+              contact.lastMessage.timestamp ? DateTime.fromSeconds(contact.lastMessage.timestamp).toFormat('dd/MM/yyyy') : ''
+            }}
+          </q-item-label>
+          <q-icon name="keyboard_arrow_down" />
+        </q-item-section>
+      </q-item>
     </q-list>
   </q-scroll-area>
 </template>
 
 <script lang="ts" setup>
-import type { IContact } from '@/interfaces/IContacts'
+import type { IContact } from '@/interfaces/IContact'
 import { ref } from 'vue'
-import { setErrorImg } from '@/services/chat.service'
+import { setErrorImg } from '@/services/chat/chat.service'
+import { DateTime } from 'luxon'
 
 defineProps<{
   contacts: IContact[];

@@ -1,15 +1,13 @@
-import type { StatusMessage } from '@/types/StatusMessage'
-
 export type IMessage = {
   id: string;
-  timestamp: string;
+  timestamp?: number;
   type: 'sent' | 'received';
   userName: string;
   userAvatar?: string;
-  status: StatusMessage;
+  status: 0 | 1 | 2 | 3 | 4 | 5;
 } & ({
   text: string;
-  media?: never;
+  media?: undefined;
 } | {
   text?: string;
   media: {

@@ -47,13 +47,16 @@
         </div>
       </transition>
     </div>
-    <span :class="`${message.type}`" class="message-time">{{ message.timestamp }}</span>
+    <span :class="`${message.type}`" class="message-time">
+       {{ message.timestamp ? DateTime.fromSeconds(message.timestamp).toFormat('HH:mm') : '' }}
+    </span>
   </div>
 </template>
 
 <script lang="ts" setup>
 import type { IMessage } from '@/interfaces/IMessage'
 import { ref } from 'vue'
+import { DateTime } from 'luxon'
 
 defineProps<{ message: IMessage, firstMessage: boolean }>()
 
