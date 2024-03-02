@@ -50,7 +50,7 @@
 
     <q-page-container>
       <q-page padding>
-        <template v-for="(group, index) in groupedMessages" :key="index">
+        <template v-for="(group, groupIndex) in groupedMessages" :key="groupIndex">
           <div :class="group.type">
             <MessageArea v-for="(message, index) in group.messages" :key="message.id" :first-message="index === 0"
                          :message="message"></MessageArea>

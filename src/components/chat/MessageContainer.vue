@@ -1,9 +1,7 @@
 <template>
   <div :class="message.type" class="message">
     <span v-if="firstMessage" :class="message.type">{{ message.userName }}</span>
-    <div :class="firstMessage ? 'arrow-bubble' : ''" class="bubble"
-         @mouseleave="hover = false"
-         @mouseover="hover = true">
+    <div class="bubble" @mouseleave="hover = false" @mouseover="hover = true">
       <span v-if="!message.media">{{ message.text }}</span>
       <div v-else class="column q-gutter-xs">
         <img v-if="message.media.type === 'image'" :src="message.media.url" alt="Media">
@@ -78,32 +76,6 @@ const openMenu = ref(false)
   border-radius: 7px;
   padding: 4px 8px;
   max-width: 70%;
-}
-
-.sent > .arrow-bubble::before {
-  content: "";
-  width: 0;
-  height: 0;
-  position: absolute;
-  border-left: 8px solid #DCF8C6;
-  border-right: 8px solid transparent;
-  border-top: 8px solid #DCF8C6;
-  border-bottom: 8px solid transparent;
-  right: -9px;
-  top: 0;
-}
-
-.received > .arrow-bubble::before {
-  content: "";
-  width: 0;
-  height: 0;
-  position: absolute;
-  border-left: 8px solid transparent;
-  border-right: 8px solid #fff;
-  border-top: 8px solid #fff;
-  border-bottom: 8px solid transparent;
-  left: -9px;
-  top: 0;
 }
 
 .sent {
