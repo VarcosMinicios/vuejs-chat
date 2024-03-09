@@ -2,8 +2,8 @@ import type { IContactApi } from '@/interfaces/api/IContactApi'
 import type { IContact } from '@/interfaces/IContact'
 import axios from 'axios'
 
-export const getContacts = async (whatsappId: string, search?: string) => {
-  const { data } = await axios.get(`/contacts/${whatsappId}`, { params: { search } })
+export const getContacts = async (whatsappId: string, lastIndex: number, search?: string) => {
+  const { data } = await axios.get(`/contacts/${whatsappId}`, { params: { lastIndex, limit: 30, search } })
   return formatContacts(data)
 }
 

@@ -41,7 +41,9 @@
     </q-header>
 
     <q-drawer v-model="leftDrawerOpen" :breakpoint="690" bordered show-if-above>
-      <ContactList :contacts="contacts" @onChangeCurrentChat="(chatId: string) => currentConversationId = chatId"
+      <ContactList :contacts="contacts"
+                   @loadContacts="(done, index) => $emit('loadContacts', done, index)"
+                   @onChangeCurrentChat="(chatId: string) => currentConversationId = chatId"
                    @onSearch="(value: string) => search(value)" />
     </q-drawer>
 
@@ -49,13 +51,23 @@
     </q-drawer>
 
     <q-page-container>
-      <q-page padding>
-        <template v-for="(group, groupIndex) in groupedMessages" :key="groupIndex">
-          <div :class="group.type">
-            <MessageArea v-for="(message, index) in group.messages" :key="message.id" :first-message="index === 0"
-                         :message="message"></MessageArea>
+      <q-page class="row">
+        <q-infinite-scroll ref="infiniteScroll" class="full-width q-px-md q-pt-md"
+                           reverse
+                           @load="(index, done) => $emit('loadMessages', currentConversationId, done, index)">
+          <template v-slot:loading>
+            <div class="row justify-center q-my-md">
+              <q-spinner-dots color="primary" size="40px" />
+            </div>
+          </template>
+
+          <div v-for="(group, groupIndex) in groupedMessages" :key="groupIndex">
+            <div :class="group.type">
+              <MessageArea v-for="(message, index) in group.messages" :key="message.id" :first-message="index === 0"
+                           :message="message"></MessageArea>
+            </div>
           </div>
-        </template>
+        </q-infinite-scroll>
       </q-page>
     </q-page-container>
 
@@ -77,11 +89,11 @@
 <script lang="ts" setup>
 import type { IContact } from '@/interfaces/IContact'
 import type { IMessage } from '@/interfaces/IMessage'
+import { type QInfiniteScroll, useQuasar } from 'quasar'
+import { computed, ref, watch } from 'vue'
+import { setErrorImg } from '@/services/chat/chat.service'
 import MessageArea from '@/components/chat/MessageContainer.vue'
 import ContactList from '@/components/chat/ContactList.vue'
-import { computed, ref, watch } from 'vue'
-import { useQuasar } from 'quasar'
-import { setErrorImg } from '@/services/chat/chat.service'
 
 const props = defineProps<{
   contacts: IContact[];
@@ -89,11 +101,15 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  (e: 'changeCurrentContact', id: string): void;
   (e: 'onSearch', value?: string): void;
+  (e: 'loadMessages', id: string, done: (stop?: boolean) => void, index: number): void;
+  (e: 'loadContacts', done: (stop?: boolean) => void, index: number): void;
+  (e: 'onChangeCurrentConversation'): void;
 }>()
 
 const { dark } = useQuasar()
+
+const infiniteScroll = ref<QInfiniteScroll>()
 
 const message = ref('')
 const currentConversationId = ref('')
@@ -119,7 +135,9 @@ const groupedMessages = computed(() => {
 })
 
 watch(currentConversationId, () => {
-  emit('changeCurrentContact', currentConversationId.value)
+  emit('onChangeCurrentConversation')
+  infiniteScroll.value?.reset()
+  infiniteScroll.value?.resume()
 })
 
 const toggleLeftDrawer = () => {

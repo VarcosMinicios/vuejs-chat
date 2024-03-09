@@ -2,8 +2,8 @@ import axios from 'axios'
 import type { IMessage } from '@/interfaces/IMessage'
 import type { IMessageDataApi } from '@/interfaces/api/message/IMessageDataApi'
 
-export const getMessages = async (contactId: string, whatsappId: string) => {
-  const { data } = await axios.get(`/messages/${whatsappId}/${contactId}`)
+export const getMessages = async (contactId: string, whatsappId: string, lastIndex: number) => {
+  const { data } = await axios.get(`/messages/${whatsappId}/${contactId}`, { params: { lastIndex, limit: 30 } })
   return formatMessages(data)
 }
 

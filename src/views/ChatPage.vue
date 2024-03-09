@@ -1,5 +1,8 @@
 <template>
-  <ChatContainer :contacts="contacts" :messages="messages" @changeCurrentContact="getContactMessages"
+  <ChatContainer :contacts="contacts" :messages="messages"
+                 @loadContacts="getListContacts"
+                 @loadMessages="getContactMessages"
+                 @onChangeCurrentConversation="resetChat"
                  @onSearch="onSearchContacts" />
 </template>
 
@@ -21,14 +24,29 @@ const messages = ref<IMessage[]>([])
 
 const whatsappId = '553399445415@s.whatsapp.net'
 
-getContacts(whatsappId).then((data) => contacts.value = data)
-
-const getContactMessages = (contactId: string) => {
-  getMessages(contactId, whatsappId).then((data) => messages.value = data)
+const resetChat = () => {
+  messages.value = []
 }
 
-const onSearchContacts = (value: string) => {
-  getContacts(whatsappId, value).then((data) => contacts.value = data)
+const getContactMessages = (contactId: string, done: (stop?: boolean) => void, index: number) => {
+  getMessages(contactId, whatsappId, index - 1)
+    .then((data) => {
+      messages.value = data.concat(messages.value)
+      done(data.length < 30)
+    })
+}
+
+const getListContacts = (done: (stop?: boolean) => void, index: number) => {
+  getContacts(whatsappId, index - 1)
+    .then((data) => {
+      contacts.value = contacts.value.concat(data)
+      done(data.length < 30)
+    })
+}
+
+const onSearchContacts = (value?: string | undefined) => {
+  getContacts(whatsappId, 0, value)
+    .then((data) => contacts.value = data)
 }
 
 </script>

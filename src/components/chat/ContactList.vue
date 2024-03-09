@@ -44,8 +44,15 @@
     </q-input>
   </q-toolbar>
 
-  <q-scroll-area style="height: calc(100% - 100px); max-width: 300px">
-    <q-list separator style="max-width: 300px">
+  <q-infinite-scroll class="full-width q-px-md q-pt-md"
+                     @load="(index, done) => $emit('loadContacts', done, index)">
+    <template v-slot:loading>
+      <div class="row justify-center q-my-md">
+        <q-spinner-dots color="primary" size="40px" />
+      </div>
+    </template>
+
+    <q-list separator>
       <q-item v-for="contact in contacts" :key="contact.id" v-ripple clickable
               @click="$emit('onChangeCurrentChat', contact.id)">
         <q-item-section avatar>
@@ -74,11 +81,12 @@
         </q-item-section>
       </q-item>
     </q-list>
-  </q-scroll-area>
+  </q-infinite-scroll>
 </template>
 
 <script lang="ts" setup>
 import type { IContact } from '@/interfaces/IContact'
+import type { QInfiniteScroll } from 'quasar'
 import { ref } from 'vue'
 import { setErrorImg } from '@/services/chat/chat.service'
 import { DateTime } from 'luxon'
@@ -90,6 +98,7 @@ defineProps<{
 defineEmits<{
   (e: 'onChangeCurrentChat', id: string): void;
   (e: 'onSearch', value: string): void;
+  (e: 'loadContacts', done: (stop?: boolean) => void, index: number): void;
 }>()
 
 const contactSearch = ref('')
