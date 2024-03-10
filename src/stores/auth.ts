@@ -2,6 +2,7 @@ import type { IUser } from '@/interfaces/IUser'
 import type { ILoginData } from '@/interfaces/ILoginData'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
+import axios from 'axios'
 
 const getInitialState = () => ({
   user: localStorage.getItem('user'),
@@ -23,6 +24,7 @@ export const useAuthStore = defineStore('auth', () => {
   const setAccessToken = (token: string) => {
     localStorage.setItem('access_token', token)
     access_token.value = token
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
   }
 
   const setRefreshToken = (token: string) => {
@@ -47,5 +49,41 @@ export const useAuthStore = defineStore('auth', () => {
     refresh_token.value = null
   }
 
-  return { user, setUser, setAccessToken, setRefreshToken, login, logout, isLoggedIn }
+  const refreshToken = async () => {
+    return axios.post('/auth/refresh', { refresh: refresh_token.value })
+      .then(({ data }) => {
+        setAccessToken(data.access_token)
+        return true
+      })
+      .catch(() => {
+        logout()
+        return false
+      })
+  }
+
+  const checkAuth = async () => {
+    return axios.get('/auth/verify')
+      .then(({ data }) => {
+        setUser(data)
+        return true
+      })
+      .catch(() => {
+        logout()
+        return false
+      })
+  }
+
+  return {
+    user,
+    isLoggedIn,
+    refresh_token,
+    access_token,
+    setUser,
+    setAccessToken,
+    setRefreshToken,
+    login,
+    logout,
+    refreshToken,
+    checkAuth
+  }
 })

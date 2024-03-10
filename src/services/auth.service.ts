@@ -1,6 +1,6 @@
 import type { IUser } from '@/interfaces/IUser'
-import axios from 'axios'
 import { useAuthStore } from '@/stores/auth'
+import axios from 'axios'
 
 const useAuth = useAuthStore()
 
